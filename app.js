@@ -1,8 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import pdfRoutes from './routes/pdfRoutes.js';
-
-
+// import pdftoimageRouter from './routes/pdftoimageRouter.js'
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -12,6 +11,8 @@ app.use(express.json());
 // Routes
 app.use('/api/imagetopdf', pdfRoutes);
 app.use('/api/jpg-to-pdf', pdfRoutes);
+// app.use('/api/pdf-to-image', pdftoimageRouter);
+
 
 
 // Error handling middleware
