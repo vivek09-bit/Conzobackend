@@ -14,7 +14,7 @@ app.use(express.json());
 // Routes
 app.use('/api/imagetopdf', pdfRoutes);
 app.use('/api/jpg-to-pdf', pdfRoutes);
-app.use('/api/compressor/image', compressoRoutes);
+app.use('/api/compressor', compressoRoutes);
 
 app.use("/api/image", imageConvertRouter);
 app.use("/output", express.static(path.join("output")));

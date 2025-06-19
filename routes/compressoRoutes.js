@@ -4,6 +4,6 @@ import { compressImages } from '../controllers/compressoController.js';
 
 const router = express.Router();
 
-router.post('/', uploadImages.array('images', 10), compressImages);
+router.post('/image', uploadImages.array('images', 10), compressImages);
 
 export default router;
