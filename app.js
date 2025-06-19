@@ -1,8 +1,10 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+
 import pdfRoutes from './routes/pdfRoutes.js';
 import compressoRoutes from './routes/compressoRoutes.js';
-
+import imageConvertRouter from "./routes/imageConvertRouter.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -13,6 +15,9 @@ app.use(express.json());
 app.use('/api/imagetopdf', pdfRoutes);
 app.use('/api/jpg-to-pdf', pdfRoutes);
 app.use('/api/compressor/image', compressoRoutes);
+
+app.use("/api/image", imageConvertRouter);
+app.use("/output", express.static(path.join("output")));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

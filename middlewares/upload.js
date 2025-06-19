@@ -5,7 +5,7 @@ const storage = multer.memoryStorage();
 
 // File filters
 const imageFileFilter = (req, file, cb) => {
-  if (/image\/(png|jpeg|jpg)/.test(file.mimetype)) {
+  if (/image\/(png|jpeg|webp|jpg|tiff|avif)/.test(file.mimetype)) {
     cb(null, true);
   } else {
     cb(new Error("Unsupported image type. Only PNG and JPG are allowed."), false);
