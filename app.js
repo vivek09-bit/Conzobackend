@@ -15,6 +15,12 @@ app.use(express.json());
 app.use('/api/imagetopdf', pdfRoutes);
 app.use('/api/compressor', compressoRoutes);
 app.use("/api/image", imageConvertRouter);
+app.use("/api/jpg-to-webp", imageConvertRouter);
+app.use("/api/jpg-to-png", imageConvertRouter);
+app.use("/api/webp-to-jpg", imageConvertRouter);
+app.use("/api/avif-to-jpg", imageConvertRouter); 
+app.use("/api/avif-to-jpg", imageConvertRouter); 
+app.use("/api/avif-to-png", imageConvertRouter); 
 
 
 app.use('/api/jpg-to-pdf', pdfRoutes);
