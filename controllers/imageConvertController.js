@@ -1,22 +1,15 @@
-import sharp from "sharp";
-import { v4 as uuidv4 } from "uuid";
-import path from "path";
-import fs from "fs";
-import heicConvert from "heic-convert";
-
 export const convertImage = async (req, res) => {
   try {
-    const file = req.files?.[0];
-
-    if (!file || !file.buffer) {
-      return res.status(400).json({ error: "No image uploaded." });
-    }
-
+    const files = req.files;
     const { format = "jpg" } = req.body;
-    const supportedFormats = ["jpeg", "jpg", "png", "webp", "avif", "tiff"];
 
+    const supportedFormats = ["jpeg", "jpg", "png", "webp", "avif", "tiff"];
     if (!supportedFormats.includes(format)) {
       return res.status(400).json({ error: "Unsupported format." });
+    }
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: "No image uploaded." });
     }
 
     const outputDir = path.join("output");
@@ -24,56 +17,64 @@ export const convertImage = async (req, res) => {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    const filename = `${uuidv4()}.${format}`;
-    const outputPath = path.join(outputDir, filename);
+    const results = [];
 
-    let outputBuffer;
+    for (const file of files) {
+      let outputBuffer;
+      const fileName = `${uuidv4()}.${format}`;
+      const outputPath = path.join(outputDir, fileName);
 
-    // Use heic-convert if input is HEIC
-    if (
-      file.mimetype === "image/heic" ||
-      file.originalname.toLowerCase().endsWith(".heic")
-    ) {
-      if (!["jpg", "jpeg", "png"].includes(format.toLowerCase())) {
-        return res.status(400).json({
-          error: "HEIC images can only be converted to JPG or PNG.",
+      if (
+        file.mimetype === "image/heic" ||
+        file.originalname.toLowerCase().endsWith(".heic")
+      ) {
+        if (!["jpg", "jpeg", "png"].includes(format.toLowerCase())) {
+          continue; // skip unsupported HEIC conversion
+        }
+
+        const heicFormat = format.toLowerCase() === "png" ? "PNG" : "JPEG";
+        outputBuffer = await heicConvert({
+          buffer: file.buffer,
+          format: heicFormat,
+          quality: 1,
         });
+      } else {
+        let image = sharp(file.buffer).rotate();
+
+        if (format === "jpeg" || format === "jpg") {
+          image = image.jpeg({ quality: 90 });
+        } else if (format === "png") {
+          image = image.png({ compressionLevel: 6 });
+        } else if (format === "webp") {
+          image = image.webp({ quality: 90 });
+        } else if (format === "avif") {
+          image = image.avif({ quality: 80 });
+        } else if (format === "tiff") {
+          image = image.tiff({ quality: 90 });
+        }
+
+        outputBuffer = await image.toBuffer();
       }
 
-      const heicFormat = format.toLowerCase() === "png" ? "PNG" : "JPEG";
+      // Write to disk temporarily
+      fs.writeFileSync(outputPath, outputBuffer);
 
-      outputBuffer = await heicConvert({
-        buffer: file.buffer,
-        format: heicFormat,
-        quality: 1,
+      // Read as base64
+      const base64Image = fs.readFileSync(outputPath).toString("base64");
+
+      results.push({
+        name: fileName,
+        type: `image/${format}`,
+        data: base64Image,
       });
-    }
-    else {
-      // Use sharp for other formats
-      let image = sharp(file.buffer).rotate();
 
-      if (format === "jpeg" || format === "jpg") {
-        image = image.jpeg({ quality: 90 });
-      } else if (format === "png") {
-        image = image.png({ compressionLevel: 6 });
-      } else if (format === "webp") {
-        image = image.webp({ quality: 90 });
-      } else if (format === "avif") {
-        image = image.avif({ quality: 80 });
-      } else if (format === "tiff") {
-        image = image.tiff({ quality: 90 });
-      }
-
-      outputBuffer = await image.toBuffer();
+      // Optional: delete temp file after conversion
+      fs.unlinkSync(outputPath);
     }
 
-    fs.writeFileSync(outputPath, outputBuffer);
-
-    res.setHeader("Content-Type", `image/${format}`);
-    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
-    fs.createReadStream(outputPath).pipe(res);
+    return res.json({ images: results });
   } catch (err) {
     console.error("Conversion error:", err);
-    res.status(500).json({ error: "Failed to convert image." });
+    return res.status(500).json({ error: "Failed to convert images." });
   }
 };
