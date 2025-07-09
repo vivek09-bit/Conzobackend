@@ -1,44 +1,56 @@
+import sharp from "sharp";
+import { v4 as uuidv4 } from "uuid";
+import path from "path";
+import fs from "fs";
+import heicConvert from "heic-convert";
+import archiver from "archiver";
+
 export const convertImage = async (req, res) => {
   try {
     const files = req.files;
-    const { format = "jpg" } = req.body;
-
-    const supportedFormats = ["jpeg", "jpg", "png", "webp", "avif", "tiff"];
-    if (!supportedFormats.includes(format)) {
-      return res.status(400).json({ error: "Unsupported format." });
-    }
 
     if (!files || files.length === 0) {
-      return res.status(400).json({ error: "No image uploaded." });
+      return res.status(400).json({ error: "No images uploaded." });
     }
 
-    const outputDir = path.join("output");
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
+    const format = (req.body.format || req.params?.toFormat || "jpg").toLowerCase();
+    const supportedFormats = ["jpeg", "jpg", "png", "webp", "avif", "tiff"];
+
+    if (!supportedFormats.includes(format)) {
+      return res.status(400).json({ error: "Unsupported format requested." });
     }
 
-    const results = [];
+    const convertedImages = [];
 
     for (const file of files) {
-      let outputBuffer;
-      const fileName = `${uuidv4()}.${format}`;
-      const outputPath = path.join(outputDir, fileName);
+      const fileExt = format === "jpg" ? "jpg" : format;
+      const filename = `${uuidv4()}.${fileExt}`;
 
-      if (
-        file.mimetype === "image/heic" ||
-        file.originalname.toLowerCase().endsWith(".heic")
-      ) {
-        if (!["jpg", "jpeg", "png"].includes(format.toLowerCase())) {
-          continue; // skip unsupported HEIC conversion
+      let outputBuffer;
+
+      // Detect HEIC/HEIF
+      const isHEIC =
+        file.mimetype.includes("heic") ||
+        file.mimetype.includes("heif") ||
+        file.originalname.toLowerCase().endsWith(".heic") ||
+        file.originalname.toLowerCase().endsWith(".heif");
+
+      if (isHEIC) {
+        if (!["jpg", "jpeg", "png"].includes(format)) {
+          return res.status(400).json({
+            error: "HEIC/HEIF images can only be converted to JPG or PNG.",
+          });
         }
 
-        const heicFormat = format.toLowerCase() === "png" ? "PNG" : "JPEG";
+        const heicFormat = format === "png" ? "PNG" : "JPEG";
+
         outputBuffer = await heicConvert({
           buffer: file.buffer,
           format: heicFormat,
           quality: 1,
         });
       } else {
+        // Sharp for standard images
         let image = sharp(file.buffer).rotate();
 
         if (format === "jpeg" || format === "jpg") {
@@ -56,25 +68,27 @@ export const convertImage = async (req, res) => {
         outputBuffer = await image.toBuffer();
       }
 
-      // Write to disk temporarily
-      fs.writeFileSync(outputPath, outputBuffer);
+      const mimeTypeMap = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        webp: "image/webp",
+        avif: "image/avif",
+        tiff: "image/tiff",
+      };
 
-      // Read as base64
-      const base64Image = fs.readFileSync(outputPath).toString("base64");
-
-      results.push({
-        name: fileName,
-        type: `image/${format}`,
-        data: base64Image,
+      convertedImages.push({
+        filename,
+        type: mimeTypeMap[fileExt],
+        data: outputBuffer.toString("base64"),
       });
-
-      // Optional: delete temp file after conversion
-      fs.unlinkSync(outputPath);
     }
 
-    return res.json({ images: results });
+    res.status(200).json({ images: convertedImages });
+
   } catch (err) {
     console.error("Conversion error:", err);
-    return res.status(500).json({ error: "Failed to convert images." });
+    res.status(500).json({ error: "Failed to convert images." });
   }
 };
+
