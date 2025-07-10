@@ -5,8 +5,7 @@ import { uploadImages } from '../middlewares/upload.js';
 
 const router = express.Router();
 
-router.post('/convert', uploadImages.array('images', 10), convertImage);
 router.post('/', uploadImages.array('images', 10), convertImage);
-
+router.post('/convert', uploadImages.array('images', 10), convertImage);
 
 export default router;

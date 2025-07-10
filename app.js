@@ -8,12 +8,10 @@ import imageConvertRouter from "./routes/imageConvertRouter.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-    app.use(cors({ origin: '*' }));
-    app.use(express.json());
+app.use(cors({ origin: '*' }));
+app.use(express.json());
 
-    app.use(express.urlencoded({ extended: true }));
-
-    // Routes
+// Routes
 app.use('/api/imagetopdf', pdfRoutes);
 app.use('/api/compressor', compressoRoutes);
 app.use("/api/image", imageConvertRouter);
@@ -21,7 +19,6 @@ app.use("/api/jpg-to-webp", imageConvertRouter);
 app.use("/api/jpg-to-png", imageConvertRouter);
 app.use("/api/webp-to-jpg", imageConvertRouter);
 app.use("/api/avif-to-jpg", imageConvertRouter); 
-app.use("/api/heic-to-jpg", imageConvertRouter); 
 app.use("/api/avif-to-png", imageConvertRouter); 
 
 
