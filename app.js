@@ -20,6 +20,7 @@ app.use("/api/jpg-to-png", imageConvertRouter);
 app.use("/api/webp-to-jpg", imageConvertRouter);
 app.use("/api/avif-to-jpg", imageConvertRouter); 
 app.use("/api/jpeg-to-jpg", imageConvertRouter); 
+app.use("/api/heic-to-jpg", imageConvertRouter); 
 app.use("/api/avif-to-png", imageConvertRouter); 
 
 

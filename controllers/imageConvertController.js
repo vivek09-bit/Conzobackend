@@ -11,7 +11,7 @@ if (!existsSync(OUTPUT_DIR)) {
   fs.mkdir(OUTPUT_DIR, { recursive: true }).catch(console.error);
 }
 
-const supportedFormats = ["jpeg", "jpg", "png", "webp", "avif", "tiff", "gif"];
+const supportedFormats = ["jpeg", "jpg", "png", "webp", "avif", "tiff", "gif", "heic", "heif"];
 
 export const convertImage = async (req, res) => {
   try {
