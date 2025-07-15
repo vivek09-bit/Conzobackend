@@ -16,10 +16,14 @@ app.use('/api/imagetopdf', pdfRoutes);
 app.use('/api/compressor', compressoRoutes);
 app.use("/api/image", imageConvertRouter);
 app.use("/api/jpg-to-webp", imageConvertRouter);
+app.use("/api/png-to-jpg", imageConvertRouter);
 app.use("/api/jpg-to-png", imageConvertRouter);
 app.use("/api/webp-to-jpg", imageConvertRouter);
 app.use("/api/avif-to-jpg", imageConvertRouter); 
 app.use("/api/jpeg-to-jpg", imageConvertRouter); 
+app.use("/api/Jpg-to-jpeg", imageConvertRouter); 
+app.use("/api/Jpg-to-gif", imageConvertRouter); 
+app.use("/api/heic-to-png", imageConvertRouter); 
 app.use("/api/heic-to-jpg", imageConvertRouter); 
 app.use("/api/avif-to-png", imageConvertRouter); 
 
