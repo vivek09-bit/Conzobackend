@@ -30,6 +30,7 @@ app.use("/api/avif-to-png", imageConvertRouter);
 
 
 app.use('/api/jpg-to-pdf', pdfRoutes);
+app.use('/api/pdf-to-jpg', pdfRoutes);
 
 app.use("/output", express.static(path.join("output")));
 

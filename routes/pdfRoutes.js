@@ -19,4 +19,5 @@ const upload = multer({
 
 router.post('/', upload.array('images', 10), generatePdfFromImages);
 
+router.post('/pdf-to-jpg', pdfController.convertPdfToJpg);
 export default router;

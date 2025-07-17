@@ -13,7 +13,7 @@ if (!existsSync(OUTPUT_DIR)) {
 
 // Supported formats for output
 const supportedFormats = [
-  "jpeg", "jpg", "png", "webp", "avif", "tiff", "gif", "heif", "heic"
+  "jpg", "png", "webp", "heic", "avif", "jpeg", "tiff", "gif", "heif"
 ];
 
 

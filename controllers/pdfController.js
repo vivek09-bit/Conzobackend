@@ -61,3 +61,26 @@ export const generatePdfFromImages = async (req, res) => {
     res.status(500).json({ error: 'Failed to generate PDF.' });
   }
 };
+
+export const convertPdfToJpg = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    const pdfBuffer = req.file.buffer;
+    const { pages } = await sharp(pdfBuffer).pdf().pages();
+    const images = [];
+    for (let i = 0; i < pages; i++) {
+      const img = await sharp(pdfBuffer)
+        .pdf({ page: i })
+        .jpeg({ quality: 90 })
+        .toBuffer();
+      images.push(img);
+    }
+    res.set('Content-Type', 'image/jpeg');
+    res.status(200).send(Buffer.concat(images));
+  } catch (error) {
+    console.error('Error converting PDF to JPG:', error);
+    res.status(500).json({ error: 'Failed to convert PDF to JPG' });
+  }
+};
