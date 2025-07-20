@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { generatePdfFromImages } from '../controllers/pdfController.js';
+import { generatePdfFromImages, convertPdfToJpg } from '../controllers/pdfController.js';
 
 const router = express.Router();
 
@@ -19,5 +19,5 @@ const upload = multer({
 
 router.post('/', upload.array('images', 10), generatePdfFromImages);
 
-router.post('/pdf-to-jpg', pdfController.convertPdfToJpg);
+router.post('/pdf-to-jpg', convertPdfToJpg);
 export default router;
